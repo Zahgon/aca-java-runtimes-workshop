@@ -1,13 +1,11 @@
 package io.containerapps.javaruntime.workshop.springboot;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import io.micronaut.runtime.Micronaut;
 
-@SpringBootApplication
 public class SpringbootApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringbootApplication.class, args);
+		Micronaut.run(SpringbootApplication.class, args);
 	}
 
 }

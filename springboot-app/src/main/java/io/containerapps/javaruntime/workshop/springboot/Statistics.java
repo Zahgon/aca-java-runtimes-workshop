@@ -1,5 +1,6 @@
 package io.containerapps.javaruntime.workshop.springboot;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +24,15 @@ public class Statistics {
     public String parameter;
     public Duration duration;
     public String description;
+
+    @JsonIgnore
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
 
 enum Type {

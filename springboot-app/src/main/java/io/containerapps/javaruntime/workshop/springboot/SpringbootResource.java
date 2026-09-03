@@ -1,13 +1,17 @@
 // tag::adocHeader[]
 package io.containerapps.javaruntime.workshop.springboot;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import io.micronaut.core.annotation.Nullable;
+import io.micronaut.http.HttpHeaders;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Options;
+import io.micronaut.http.annotation.QueryValue;
 
 import java.lang.System.Logger;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,8 +21,7 @@ import java.util.List;
 import static java.lang.System.Logger.Level.INFO;
 import static java.lang.invoke.MethodHandles.lookup;
 
-@RestController
-@RequestMapping("/springboot")
+@Controller("/springboot")
 public class SpringbootResource {
 
     private static final Logger LOGGER = System.getLogger(lookup().lookupClass().getName());
@@ -37,12 +40,25 @@ public class SpringbootResource {
      * @return hello
      */
 // tag::adocMethodHello[]
-    @GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-    public String hello() {
+    @Get(produces = MediaType.TEXT_PLAIN + ";charset=UTF-8")
+    public HttpResponse<String> hello() {
         LOGGER.log(INFO, "Spring Boot: hello");
-        return "Spring Boot: hello";
+        String greeting = "Spring Boot: hello";
+        // The entity headers are stated on the response itself so that a HEAD request, whose body
+        // is discarded before it is written, still describes the entity a GET would have returned.
+        return HttpResponse.ok(greeting)
+                .contentType(MediaType.TEXT_PLAIN + ";charset=UTF-8")
+                .contentLength(greeting.getBytes(StandardCharsets.UTF_8).length);
     }
 // end::adocMethodHello[]
+
+    /**
+     * Reports which methods the greeting supports.
+     */
+    @Options
+    public HttpResponse<?> helloOptions() {
+        return HttpResponse.ok().header(HttpHeaders.ALLOW, "GET,HEAD,OPTIONS");
+    }
 
     /**
      * Simulates requests that use a lot of CPU.
@@ -55,10 +71,10 @@ public class SpringbootResource {
      * @return the result
      */
 // tag::adocMethodCPU[]
-    @GetMapping(path = "/cpu", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String cpu(@RequestParam(value = "iterations", defaultValue = "10") Long iterations,
-                      @RequestParam(value = "db", defaultValue = "false") Boolean db,
-                      @RequestParam(value = "desc", required = false) String desc) {
+    @Get(uri = "/cpu", produces = MediaType.TEXT_PLAIN + ";charset=UTF-8")
+    public String cpu(@QueryValue(value = "iterations", defaultValue = "10") Long iterations,
+                      @QueryValue(value = "db", defaultValue = "false") Boolean db,
+                      @Nullable @QueryValue(value = "desc") String desc) {
         LOGGER.log(INFO, "Spring Boot: cpu: {0} {1} with desc {2}", iterations, db, desc);
         Long iterationsDone = iterations;
 
@@ -106,10 +122,10 @@ public class SpringbootResource {
      * @return the result.
      */
 // tag::adocMethodMemory[]
-    @GetMapping(path = "/memory", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String memory(@RequestParam(value = "bites", defaultValue = "10") Integer bites,
-                         @RequestParam(value = "db", defaultValue = "false") Boolean db,
-                         @RequestParam(value = "desc", required = false) String desc) {
+    @Get(uri = "/memory", produces = MediaType.TEXT_PLAIN + ";charset=UTF-8")
+    public String memory(@QueryValue(value = "bites", defaultValue = "10") Integer bites,
+                         @QueryValue(value = "db", defaultValue = "false") Boolean db,
+                         @Nullable @QueryValue(value = "desc") String desc) {
         LOGGER.log(INFO, "Spring Boot: memory: {0} {1} with desc {2}", bites, db, desc);
 
         Instant start = Instant.now();
@@ -149,7 +165,7 @@ public class SpringbootResource {
      * @return the list of Statistics.
      */
 // tag::adocMethodStats[]
-    @GetMapping(path = "/stats", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Get(uri = "/stats", produces = MediaType.APPLICATION_JSON)
     public List<Statistics> stats() {
         LOGGER.log(INFO, "Spring Boot: retrieving statistics");
         List<Statistics> result = new ArrayList<Statistics>();
